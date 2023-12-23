@@ -7,3 +7,6 @@ Drop the ``+server.ts`` in ``routes/api/image``
 Drop the Image component wherever you wish
 
 Add sharp to your project
+
+### Caching
+Cached images are stored in ``.cache/images``.
