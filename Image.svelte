@@ -5,7 +5,8 @@
     let clazz: string | undefined;
     export { clazz as class };
     export let format = "webp";
-    export let alt: string | undefined;
+    export let alt = "";
+    export let style = "";
 
     let searchParams = new URLSearchParams();
 
@@ -27,4 +28,5 @@
     class={clazz}
     loading="lazy"
     decoding="async"
+    {style}
 />
