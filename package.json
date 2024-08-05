@@ -25,6 +25,7 @@
 		"svelte": "^4.0.0"
 	},
 	"devDependencies": {
+		"@types/node": "^22.1.0",
 		"@sveltejs/adapter-auto": "^3.0.0",
 		"@sveltejs/kit": "^2.0.0",
 		"@sveltejs/package": "^2.0.0",
@@ -39,7 +40,6 @@
 	"types": "./dist/index.d.ts",
 	"type": "module",
 	"dependencies": {
-		"@types/node": "^22.1.0",
 		"sharp": "0.32.6"
 	},
 	"license": "MIT"

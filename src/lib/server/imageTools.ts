@@ -108,7 +108,7 @@ export async function optimizeImage(url: URL) {
 
     if (
         !urlsrc.includes("://") &&
-        !existsSync("./static/" + (image as string))
+        !existsSync(path.join("./static/",(image as string)))
     ) {
         return new Response("", { status: 404 });
     }
@@ -116,7 +116,7 @@ export async function optimizeImage(url: URL) {
     const pipeline = sharp(
         urlsrc.includes("://")
             ? (image as any).buffer
-            : "./static/" + (image as string),
+            : path.join("./static/",(image as string)),
         {
             sequentialRead: true,
         },
