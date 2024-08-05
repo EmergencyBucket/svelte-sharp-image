@@ -1,6 +1,6 @@
 {
 	"name": "svelte-sharp-image",
-	"version": "0.0.1",
+	"version": "1.0.0",
 	"scripts": {
 		"dev": "vite dev",
 		"build": "vite build && npm run package",
@@ -41,5 +41,6 @@
 	"dependencies": {
 		"@types/node": "^22.1.0",
 		"sharp": "0.32.6"
-	}
+	},
+	"license": "MIT"
 }
