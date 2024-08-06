@@ -1,29 +1,18 @@
 <script lang="ts">
-    export let src: string;
-    export let width: number | undefined = undefined;
-    export let height: number | undefined = undefined;
-    let clazz: string | undefined = undefined;
-    export { clazz as class };
-    export let format = "webp";
-    export let alt = "";
-    export let style: string | undefined = undefined;
-    export let loading: "lazy" | "eager" = "lazy";
-    export let decoding: "auto" | "async" | "sync" = "async";
-
     let searchParams = new URLSearchParams();
 
-    if (width) {
-        searchParams.append("width", width.toString());
+    if ($$restProps.width) {
+        searchParams.append("width", $$restProps.width.toString());
     }
-    if (height) {
-        searchParams.append("height", height.toString());
+    if ($$restProps.height) {
+        searchParams.append("height", $$restProps.height.toString());
     }
-    searchParams.append("url", btoa(src));
-    if (format) {
-        searchParams.append("format", format);
+    searchParams.append("url", btoa($$restProps.src));
+    if ($$restProps.format) {
+        searchParams.append("format", $$restProps.format);
     }
 
-    src = "/api/image?" + searchParams.toString();
+    $$restProps.src = "/api/image?" + searchParams.toString();
 </script>
 
-<img {width} {height} {src} {alt} class={clazz} {loading} {decoding} {style} />
+<img {...$$restProps} />
