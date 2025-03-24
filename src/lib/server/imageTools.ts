@@ -1,17 +1,47 @@
 import { createHash } from "crypto";
 import { existsSync } from "fs";
-import { mkdir, readFile, writeFile } from "fs/promises";
 import path from "path";
 import sharp, { type FormatEnum, type AvailableFormatInfo } from "sharp";
+
+/**
+ * Generates a hash for caching purposes
+ * @param data The data to encode
+ * @returns The SHA1 hash of the data
+ */
+function encodeDataSHA1(data: string) {
+    let hash = createHash("sha1");
+
+    hash.update(data);
+
+    return hash.digest("hex");
+}
+
+/**
+ * Checks if a string is a valid http or https url
+ * @param string The string to check if it is a valid http url
+ * @returns True if the string is a valid http or https url, false otherwise
+ * @see https://stackoverflow.com/a/43467144
+ */
+function isValidHttpUrl(string: string) {
+    let url;
+
+    try {
+        url = new URL(string);
+    } catch (_) {
+        return false;
+    }
+
+    return url.protocol === "http:" || url.protocol === "https:";
+}
 
 /**
  * Downloads an image from the internet
  * @param url The url of the image
  * @returns The image status, buffer, and format
  */
-async function fetchImage(url: string){
+async function fetchImage(url: string) {
     try {
-        const fetchReq = await fetch(url, { keepalive: false });
+        const fetchReq = await fetch(url);
 
         let format = url.split(".").pop();
         if (
@@ -33,30 +63,10 @@ async function fetchImage(url: string){
     }
 };
 
-/**
- * Caches an image locally
- * @param tag the tag to use
- * @param buffer buffer of the image
- */
-async function saveCache(tag: string, buffer: Buffer) {
-    await mkdir(path.join(".cache", "images"), {
-        recursive: true,
-    });
-
-    await writeFile(path.join(".cache", "images", tag), buffer);
-}
-
-/**
- * Gets an image from the cache
- * @param tag The tag of the image
- * @returns the image
- */
-async function getCache(tag: string) {
-    try {
-        return await readFile(path.join(".cache", "images", tag));
-    } catch (e) {
-        return undefined;
-    }
+export type ImageOptimizeConfig = {
+    getCache?: (tag: string) => Promise<Buffer | undefined>;
+    saveCache?: (tag: string, buffer: Buffer) => Promise<void>;
+    safeEndpoints?: string[];
 }
 
 /**
@@ -64,12 +74,10 @@ async function getCache(tag: string) {
  * @param url the url of the image, can also being a local file
  * @returns the optimized image
  */
-export async function optimizeImage(url: URL) {
-    const sha256 = createHash("sha256");
+export async function optimizeImage(url: URL, config: ImageOptimizeConfig) {
+    const tag = encodeDataSHA1(url.toString());
 
-    const tag = sha256.update(url.toString()).digest("hex");
-
-    const buff = await getCache(tag);
+    const buff = config.getCache ? await config.getCache(tag) : undefined;
 
     if (buff) {
         return new Response(buff, {
@@ -93,30 +101,44 @@ export async function optimizeImage(url: URL) {
     const quality = url.searchParams.has("quality")
         ? parseInt(url.searchParams.get("quality")!)
         : 100;
-    const image = urlsrc.includes("://") ? await fetchImage(urlsrc) : urlsrc;
 
-    if (urlsrc.includes("://") && (image as any).status !== 200) {
+    const isUrl = isValidHttpUrl(urlsrc);
+
+    // Check if the endpoint is safe if the image source is a URL
+    if (isUrl) {
+        const endpoint = new URL(urlsrc).hostname;
+        if(config.safeEndpoints && !config.safeEndpoints.includes(endpoint)) {
+            return new Response("Unsafe endpoint", { status: 403 });
+        }
+    }
+
+    const image = isUrl ? await fetchImage(urlsrc) : urlsrc;
+
+    if (isUrl && (image as any).status !== 200) {
         return new Response("Image not found", { status: 400 });
     }
 
     const format = url.searchParams.has("format")
         ? url.searchParams.get("format")
         : "webp";
+    
+    // Specific avif adjustments that we need to make
     const toFormat: keyof FormatEnum | AvailableFormatInfo =
         format === "avif" ? "heif" : (format as any);
     const compression = format === "avif" ? "av1" : undefined;
 
+    // If its a local file, check if it exists
     if (
-        !urlsrc.includes("://") &&
-        !existsSync(path.join("./static/",(image as string)))
+        !isUrl &&
+        !existsSync(path.join("./static/", (image as string)))
     ) {
         return new Response("", { status: 404 });
     }
 
     const pipeline = sharp(
-        urlsrc.includes("://")
+        isUrl
             ? (image as any).buffer
-            : path.join("./static/",(image as string)),
+            : path.join("./static/", (image as string)),
         {
             sequentialRead: true,
         },
@@ -125,9 +147,11 @@ export async function optimizeImage(url: URL) {
     let width = url.searchParams.has("width")
         ? parseInt(url.searchParams.get("width")!)
         : null;
+    
     let height = url.searchParams.has("height")
         ? parseInt(url.searchParams.get("height")!)
         : null;
+    
     width = width && (await pipeline.metadata()).width! >= width ? width : null;
     height =
         height && (await pipeline.metadata()).height! >= height ? height : null;
@@ -146,7 +170,9 @@ export async function optimizeImage(url: URL) {
         pipeline.toBuffer((_, buffer) => resolve(buffer));
     });
 
-    saveCache(tag, buffer);
+    if(config.saveCache) {
+        config.saveCache(tag, buffer);
+    }
 
     return new Response(buffer, {
         headers: {
