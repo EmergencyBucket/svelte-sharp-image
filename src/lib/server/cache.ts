@@ -11,10 +11,10 @@ export class FileCache {
         await mkdir(path.join(".cache", "images"), {
             recursive: true,
         });
-    
+
         await writeFile(path.join(".cache", "images", tag), buffer);
     }
-    
+
     /**
      * Gets an image from the cache
      * @param tag The tag of the image

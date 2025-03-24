@@ -6,5 +6,6 @@ export const GET: RequestHandler = async ({ url }) => {
     return await optimizeImage(url, {
         getCache: FileCache.getCache,
         saveCache: FileCache.saveCache,
+        safeEndpoints: ["i.mrxbox98.me"],
     });
-}
+};

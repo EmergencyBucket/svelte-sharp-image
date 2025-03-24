@@ -1,4 +1,8 @@
 <script lang="ts">
+    import type { HTMLImgAttributes } from "svelte/elements";
+
+    interface $$Props extends HTMLImgAttributes {}
+
     let searchParams = new URLSearchParams();
 
     if ($$restProps.width) {

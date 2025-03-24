@@ -1,7 +1,7 @@
 import { createHash } from "crypto";
 import { existsSync } from "fs";
 import path from "path";
-import sharp, { type FormatEnum, type AvailableFormatInfo } from "sharp";
+import sharp, { type AvailableFormatInfo, type FormatEnum } from "sharp";
 
 /**
  * Generates a hash for caching purposes
@@ -61,13 +61,14 @@ async function fetchImage(url: string) {
     } catch (e) {
         return { status: 500 };
     }
-};
+}
 
 export type ImageOptimizeConfig = {
     getCache?: (tag: string) => Promise<Buffer | undefined>;
     saveCache?: (tag: string, buffer: Buffer) => Promise<void>;
+    // If the image is already cached, this will be completely bypassed
     safeEndpoints?: string[];
-}
+};
 
 /**
  * Optimizes an image using sharp
@@ -107,7 +108,7 @@ export async function optimizeImage(url: URL, config: ImageOptimizeConfig) {
     // Check if the endpoint is safe if the image source is a URL
     if (isUrl) {
         const endpoint = new URL(urlsrc).hostname;
-        if(config.safeEndpoints && !config.safeEndpoints.includes(endpoint)) {
+        if (config.safeEndpoints && !config.safeEndpoints.includes(endpoint)) {
             return new Response("Unsafe endpoint", { status: 403 });
         }
     }
@@ -121,24 +122,19 @@ export async function optimizeImage(url: URL, config: ImageOptimizeConfig) {
     const format = url.searchParams.has("format")
         ? url.searchParams.get("format")
         : "webp";
-    
+
     // Specific avif adjustments that we need to make
     const toFormat: keyof FormatEnum | AvailableFormatInfo =
         format === "avif" ? "heif" : (format as any);
     const compression = format === "avif" ? "av1" : undefined;
 
     // If its a local file, check if it exists
-    if (
-        !isUrl &&
-        !existsSync(path.join("./static/", (image as string)))
-    ) {
+    if (!isUrl && !existsSync(path.join("./static/", image as string))) {
         return new Response("", { status: 404 });
     }
 
     const pipeline = sharp(
-        isUrl
-            ? (image as any).buffer
-            : path.join("./static/", (image as string)),
+        isUrl ? (image as any).buffer : path.join("./static/", image as string),
         {
             sequentialRead: true,
         },
@@ -147,11 +143,11 @@ export async function optimizeImage(url: URL, config: ImageOptimizeConfig) {
     let width = url.searchParams.has("width")
         ? parseInt(url.searchParams.get("width")!)
         : null;
-    
+
     let height = url.searchParams.has("height")
         ? parseInt(url.searchParams.get("height")!)
         : null;
-    
+
     width = width && (await pipeline.metadata()).width! >= width ? width : null;
     height =
         height && (await pipeline.metadata()).height! >= height ? height : null;
@@ -170,7 +166,7 @@ export async function optimizeImage(url: URL, config: ImageOptimizeConfig) {
         pipeline.toBuffer((_, buffer) => resolve(buffer));
     });
 
-    if(config.saveCache) {
+    if (config.saveCache) {
         config.saveCache(tag, buffer);
     }
 

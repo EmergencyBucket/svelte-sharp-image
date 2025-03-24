@@ -2,4 +2,4 @@
 import Image from "./Image.svelte";
 import { optimizeImage } from "./server/imageTools.js";
 
-export { Image, optimizeImage }
+export { Image, optimizeImage };
