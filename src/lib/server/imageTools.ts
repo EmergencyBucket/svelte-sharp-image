@@ -75,7 +75,10 @@ export type ImageOptimizeConfig = {
  * @param url the url of the image, can also being a local file
  * @returns the optimized image
  */
-export async function optimizeImage(url: URL, config: ImageOptimizeConfig) {
+export async function optimizeImage(
+    url: URL,
+    config: ImageOptimizeConfig = {},
+) {
     const tag = encodeDataSHA1(url.toString());
 
     const buff = config.getCache ? await config.getCache(tag) : undefined;
