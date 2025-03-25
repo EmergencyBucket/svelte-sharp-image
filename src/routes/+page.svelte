@@ -23,12 +23,15 @@
     following code:
 </p>
 <blockquote style="white-space: pre-line">
-    {`import { optimizeImage } from "svelte-sharp-image";
+    {`import { optimizeImage } from "svelte-sharp-image/server";
 import type { RequestHandler } from "@sveltejs/kit";
 
 export const GET: RequestHandler = async ({ url }) => {
-    return await optimizeImage(url);
-}`}
+    return await optimizeImage(url, {
+        safeEndpoints: ["i.mrxbox98.me"],
+    });
+};
+`}
 </blockquote>
 <p>
     You can also pass in a config object into the <code>optimizeImage</code> function.
