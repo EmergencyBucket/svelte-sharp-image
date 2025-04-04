@@ -51,7 +51,9 @@ export const GET: RequestHandler = async ({ url }) => {
 <p>Yields the following result:</p>
 <Image
     src="https://i.mrxbox98.me/file/2024/08/chrome_Sb3dUdhQfy.png"
-    style="width: 200px"
+    width={100}
+    height={100}
+    position="left"
 />
 <Image src="/favicon.png" />
 <p>

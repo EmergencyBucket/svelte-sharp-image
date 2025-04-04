@@ -79,11 +79,13 @@ export async function optimizeImage(
     url: URL,
     config: ImageOptimizeConfig = {},
 ) {
+    console.log("Optimize image ran!");
+
     const tag = encodeDataSHA1(url.toString());
 
     const buff = config.getCache ? await config.getCache(tag) : undefined;
 
-    if (buff) {
+    if (buff && false) {
         return new Response(buff, {
             headers: {
                 "Cache-Control": "public, max-age=31536000",
@@ -151,12 +153,17 @@ export async function optimizeImage(
         ? parseInt(url.searchParams.get("height")!)
         : null;
 
+    let position = url.searchParams.has("position")
+        ? url.searchParams.get("position")!
+        : "centre";
+
     width = width && (await pipeline.metadata()).width! >= width ? width : null;
     height =
         height && (await pipeline.metadata()).height! >= height ? height : null;
 
     if (width || height) {
-        pipeline.resize(width, height, { fit: "outside" });
+        console.log("Resizing image to", width, height);
+        pipeline.resize(width, height, { position });
     }
 
     pipeline.toFormat(toFormat, {
