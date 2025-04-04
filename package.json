@@ -1,6 +1,6 @@
 {
     "name": "svelte-sharp-image",
-    "version": "2.0.1",
+    "version": "2.0.2",
     "scripts": {
         "dev": "vite dev",
         "lint": "prettier --check . && svelte-check --tsconfig ./tsconfig.json",
@@ -40,6 +40,7 @@
         "prettier-plugin-organize-imports": "^4.1.0",
         "prettier-plugin-svelte": "^3.3.3",
         "publint": "^0.1.9",
+        "sharp": "0.33.5",
         "svelte": "^4.2.7",
         "svelte-check": "^3.6.0",
         "typescript": "^5.0.0",
@@ -48,8 +49,5 @@
     "svelte": "./dist/index.js",
     "types": "./dist/index.d.ts",
     "type": "module",
-    "dependencies": {
-        "sharp": "0.33.5"
-    },
     "license": "MIT"
 }
