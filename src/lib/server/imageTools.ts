@@ -79,13 +79,11 @@ export async function optimizeImage(
     url: URL,
     config: ImageOptimizeConfig = {},
 ) {
-    console.log("Optimize image ran!");
-
     const tag = encodeDataSHA1(url.toString());
 
     const buff = config.getCache ? await config.getCache(tag) : undefined;
 
-    if (buff && false) {
+    if (buff) {
         return new Response(buff, {
             headers: {
                 "Cache-Control": "public, max-age=31536000",
@@ -162,7 +160,6 @@ export async function optimizeImage(
         height && (await pipeline.metadata()).height! >= height ? height : null;
 
     if (width || height) {
-        console.log("Resizing image to", width, height);
         pipeline.resize(width, height, { position });
     }
 
